@@ -4,6 +4,7 @@ import telebot
 import subprocess
 import datetime
 import os
+import time as time_module
 
 from keep_alive import keep_alive
 keep_alive()
@@ -288,23 +289,45 @@ def start_attack_reply(message, target, port, time):
 # Dictionary to store the last time each user ran the /bgmi command
 bgmi_cooldown = {}
 
-COOLDOWN_TIME =0
+COOLDOWN_TIME =60
+
+def start_attack_reply(message, target, port, attack_time):
+    user_info = message.from_user
+    username = user_info.username if user_info.username else user_info.first_name
+
+    # Check if the user is on cooldown
+    current_time = time_module.time()
+    last_command_time = bgmi_cooldown.get(user_info.id, 0)
+
+    # If the user is on cooldown, reply with the remaining cooldown time
+    if current_time - last_command_time < COOLDOWN_TIME:
+        remaining_time = COOLDOWN_TIME - (current_time - last_command_time)
+        response = f"{username}, please wait {int(remaining_time)} more seconds before using the /bgmi command again."
+        bot.reply_to(message, response)
+    else:
+        # Update the cooldown timestamp for the user
+        bgmi_cooldown[user_info.id] = current_time
+
+        # Proceed with starting the attack
+        response = f"{username}, 𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓𝐄𝐃.🔥🔥\n\n𝐓𝐚𝐫𝐠𝐞𝐭: {target}\n𝐏𝐨𝐫𝐭: {port}\n𝐓𝐢𝐦𝐞: {attack_time} 𝐒𝐞𝐜𝐨𝐧𝐝𝐬\n𝐌𝐞𝐭𝐡𝐨𝐝: VIP- User of BGMI"
+        bot.reply_to(message, response)
+
+        # Send the attack start notification to the channel
+        send_notification_to_channel(username, target, attack_time)
 
 # Function to send a notification to the channel
-def send_notification_to_channel(ATTACK STARTED, username, target, time):
+def send_notification_to_channel(username, target, attack_time):
     message = (
         f"🔔 *ATTACK STARTED:*\n"
-        f"👤 *User ID:* {target_user_id}\n"
-        f"💬 *Username:* @{target_username}\n"
-        f"👮 *Target:* {target}\n"
-        f"🎯 *Time {time}.*"
+        f"👤 *User:* @{username}\n"
+        f"🎯 *Target:* {target}\n"
+        f"⏱️ *Attack Time:* {attack_time} seconds."
     )
 
-# Send the message to the channel with optional inline keyboard
+    # Send the message to the channel (make sure CHANNEL_ID is defined)
     bot.send_message(
-        CHANNEL_ID,
+        CHANNEL_ID,  # Replace CHANNEL_ID with the actual channel ID
         message,
-        reply_markup=create_inline_keyboard(),  # Ensure create_inline_keyboard is defined
         parse_mode='Markdown'
     )
 
@@ -383,7 +406,7 @@ Official Channel :- BGMI KA DDOS ATTACK
 '''
     for handler in bot.message_handlers:
         if hasattr(handler, 'commands'):
-            if message.text.startswith('/help'):
+            if message.text.swith('/help'):
                 help_text += f"{handler.commands[0]}: {handler.doc}\n"
             elif handler.doc and 'admin' in handler.doc.lower():
                 continue
