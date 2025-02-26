@@ -31,3 +31,7 @@ jobs:
 
           # ✅ Show Public IP
           echo "GitHub VPS IP: $(curl ifconfig.me)"
+          
+          # ✅ 6 Hours Tak VPS Band Mat Hone Do
+          echo "Keeping VPS alive for 6 hours..."
+          while true; do sleep 3600; echo "Still Running..."; done
