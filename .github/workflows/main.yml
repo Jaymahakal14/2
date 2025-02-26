@@ -1,6 +1,15 @@
+name: Free GitHub VPS
+
+on:  
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Setup VPS
         run: |
@@ -12,9 +21,13 @@ jobs:
           sudo ufw allow 22
           sudo iptables -I INPUT -p tcp --dport 22 -j ACCEPT
           
-          # ✅ Check Karo Ki SSH Running Hai
-          sudo systemctl restart ssh
-          sudo systemctl status ssh
+          # ✅ SSH Configuration Set Karo
+          echo "PermitRootLogin yes" | sudo tee -a /etc/ssh/sshd_config
+          echo "PasswordAuthentication yes" | sudo tee -a /etc/ssh/sshd_config
+          echo "root:githubvps" | sudo chpasswd
           
-          # ✅ Public IP Show Karo
+          # ✅ Restart SSH
+          sudo systemctl restart ssh
+
+          # ✅ Show Public IP
           echo "GitHub VPS IP: $(curl ifconfig.me)"
