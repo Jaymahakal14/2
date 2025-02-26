@@ -1,0 +1,17 @@
+name: Free GitHub VPS
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install & Start SSH
+        run: |
+          sudo apt update
+          sudo apt install -y openssh-server
+          sudo systemctl start ssh
+          sudo systemctl enable ssh
+          echo "root:github" | sudo chpasswd
+          echo "PermitRootLogin yes" | sudo tee -a /etc/ssh/sshd_config
+          echo "PasswordAuthentication yes" | sudo tee -a /etc/ssh/sshd_config
+          sudo systemctl restart ssh
+          echo "GitHub VPS IP: $(curl -s ifconfig.me)"
