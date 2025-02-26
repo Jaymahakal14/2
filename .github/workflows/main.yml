@@ -1,17 +1,20 @@
-name: Free GitHub VPS
-on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install & Start SSH
+      - name: Setup VPS
         run: |
-          sudo apt update
-          sudo apt install -y openssh-server
+          sudo apt update && sudo apt install -y openssh-server
           sudo systemctl start ssh
           sudo systemctl enable ssh
-          echo "root:github" | sudo chpasswd
-          echo "PermitRootLogin yes" | sudo tee -a /etc/ssh/sshd_config
-          echo "PasswordAuthentication yes" | sudo tee -a /etc/ssh/sshd_config
+          
+          # ✅ Port 22 Allow Karo
+          sudo ufw allow 22
+          sudo iptables -I INPUT -p tcp --dport 22 -j ACCEPT
+          
+          # ✅ Check Karo Ki SSH Running Hai
           sudo systemctl restart ssh
-          echo "GitHub VPS IP: $(curl -s ifconfig.me)"
+          sudo systemctl status ssh
+          
+          # ✅ Public IP Show Karo
+          echo "GitHub VPS IP: $(curl ifconfig.me)"
